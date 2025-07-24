@@ -1,85 +1,42 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import IncidentPlayer from './components/IncidentPlayer';
 import IncidentList from './components/IncidentList';
-
-interface Camera {
-  id: string;
-  name: string;
-  location: string;
-}
-
-interface Incident {
-  id: string;
-  type: string;
-  tsStart: string;
-  tsEnd: string | null;
-  thumbnailUrl: string;
-  resolved: boolean;
-  camera: Camera;
-}
+import { mockIncidents, type Incident } from './data/mockData';
 
 export default function HomePage() {  
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch incidents from API
-  const fetchIncidents = useCallback(async (resolved?: boolean) => {
-    try {
-      setLoading(true);
-      const query = resolved !== undefined ? `?resolved=${resolved}` : '';
-      const response = await fetch(`/api/incidents${query}`);
-      if (!response.ok) throw new Error('Failed to fetch incidents');
-      const data = await response.json();
-      setIncidents(data);
-    } catch (error) {
-      console.error('Error fetching incidents:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Initial load - using a ref to ensure it only runs once
-  const hasInitialized = useRef(false);
-  
+  // Load mock data on component mount
   useEffect(() => {
-    if (hasInitialized.current) {
-      return;
-    }
-    
-    hasInitialized.current = true;
-    fetchIncidents();
+    // Simulate loading delay for realistic experience
+    setTimeout(() => {
+      setIncidents(mockIncidents);
+      setLoading(false);
+    }, 1000);
   }, []);
 
-  // Handle incident selection
-  const handleSelectIncident = useCallback((incident: Incident) => {
-    setSelectedIncident(incident);
-  }, []);
-
-  // Handle incident resolution with optimistic updates
+  // Handle incident resolution with local state updates
   const handleResolveIncident = useCallback(async (incidentId: string) => {
     try {
-      const response = await fetch(`/api/incidents/${incidentId}/resolve`, {
-        method: 'PATCH',
-      });
-      
-      if (!response.ok) throw new Error('Failed to resolve incident');
-      
-      const updatedIncident = await response.json();
-      
       // Update the incidents list with the resolved incident
       setIncidents(prev => 
         prev.map(incident => 
-          incident.id === incidentId ? updatedIncident : incident
+          incident.id === incidentId 
+            ? { ...incident, resolved: !incident.resolved }
+            : incident
         )
       );
       
       // Update selected incident if it's the one being resolved
       if (selectedIncident?.id === incidentId) {
-        setSelectedIncident(updatedIncident);
+        setSelectedIncident(prev => 
+          prev ? { ...prev, resolved: !prev.resolved } : null
+        );
       }
     } catch (error) {
       console.error('❌ Error resolving incident:', error);
@@ -87,18 +44,23 @@ export default function HomePage() {
     }
   }, [selectedIncident]);
 
+  const handleSelectIncident = (incident: Incident) => {
+    setSelectedIncident(incident);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900">
         <Navbar />
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-center h-64">
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-white">Loading incidents...</p>
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p className="text-white text-xl">Loading Security Dashboard...</p>
+              <p className="text-gray-400 text-sm mt-2">Scanning camera feeds...</p>
             </div>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
@@ -106,27 +68,40 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-900">
       <Navbar />
-      
-      <div className=" mx-auto px-6 py-1 border border-gray-700 bg-gray-800 rounded-lg p-5">
-        {/* Filter Controls */}
-        <div className="mb-1 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">Security Dashboard</h1>
-          
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Security Dashboard</h1>
+              <p className="text-gray-400">
+                Real-time monitoring across {incidents.filter(i => !i.resolved).length} active incidents
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-gray-300">System Online</span>
+              </div>
+              <div className="text-sm text-gray-400">
+                {new Date().toLocaleTimeString()}
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Incident Player - Takes up 2 columns on large screens */}
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column - Incident Player */}
+          <div className="space-y-6">
             <IncidentPlayer 
-              selectedIncident={selectedIncident} 
+              selectedIncident={selectedIncident}
               allIncidents={incidents}
               onSelectIncident={handleSelectIncident}
             />
           </div>
-          
-          {/* Incident List - Takes up 1 column on large screens */}
-          <div className="lg:col-span-1">
-            <IncidentList 
+
+          {/* Right Column - Incident List */}
+          <div className="space-y-6">
+            <IncidentList
               incidents={incidents}
               selectedIncident={selectedIncident}
               onSelectIncident={handleSelectIncident}
@@ -134,8 +109,31 @@ export default function HomePage() {
             />
           </div>
         </div>
-        
-      </div>
+
+        {/* Stats Footer */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-gray-800 rounded-lg p-6 text-center">
+            <div className="text-2xl font-bold text-blue-400">{incidents.length}</div>
+            <div className="text-sm text-gray-400">Total Incidents</div>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6 text-center">
+            <div className="text-2xl font-bold text-red-400">
+              {incidents.filter(i => !i.resolved).length}
+            </div>
+            <div className="text-sm text-gray-400">Active Alerts</div>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6 text-center">
+            <div className="text-2xl font-bold text-green-400">
+              {incidents.filter(i => i.resolved).length}
+            </div>
+            <div className="text-sm text-gray-400">Resolved</div>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6 text-center">
+            <div className="text-2xl font-bold text-yellow-400">4</div>
+            <div className="text-sm text-gray-400">Active Cameras</div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
