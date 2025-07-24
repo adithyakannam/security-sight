@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Placeholder Images</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .generator {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005999;
+        }
+        .image-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .image-item {
+            text-align: center;
+        }
+        select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Security Camera Thumbnail Generator</h1>
+    <p>This tool generates placeholder images for the SecureSight security dashboard.</p>
+    
+    <div class="generator">
+        <h2>Image Generator</h2>
+        <div>
+            <label>Select incident type:</label>
+            <select id="incidentType">
+                <option value="unauthorized-access-1">Unauthorized Access</option>
+                <option value="gun-threat-1">Gun Threat</option>
+                <option value="face-recognised-1">Face Recognition</option>
+                <option value="suspicious-activity-1">Suspicious Activity</option>
+                <option value="perimeter-breach-1">Perimeter Breach</option>
+                <option value="unattended-bag-1">Unattended Bag</option>
+                <option value="facial-recognition-1">Facial Recognition Alert</option>
+                <option value="smoke-detection-1">Smoke Detection</option>
+                <option value="crowd-density-1">Crowd Density</option>
+                <option value="placeholder">Placeholder/Fallback</option>
+            </select>
+        </div>
+        
+        <canvas id="canvas" width="640" height="360"></canvas>
+        
+        <div>
+            <button onclick="generateImage()">Generate Image</button>
+            <button onclick="downloadImage()">Download as JPG</button>
+            <button onclick="generateAll()">Generate All Images</button>
+        </div>
+    </div>
+
+    <div id="gallery" class="image-list"></div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let currentImageName = '';
+
+        const incidentTypes = {
+            'unauthorized-access-1': { 
+                title: 'UNAUTHORIZED ACCESS', 
+                color: '#dc2626',
+                icon: '🚫',
+                desc: 'Person attempting unauthorized entry'
+            },
+            'gun-threat-1': { 
+                title: 'WEAPON DETECTED', 
+                color: '#dc2626',
+                icon: '⚠️',
+                desc: 'Firearm detected in restricted area'
+            },
+            'face-recognised-1': { 
+                title: 'PERSON OF INTEREST', 
+                color: '#f59e0b',
+                icon: '👤',
+                desc: 'Known individual identified'
+            },
+            'suspicious-activity-1': { 
+                title: 'SUSPICIOUS ACTIVITY', 
+                color: '#f59e0b',
+                icon: '🔍',
+                desc: 'Unusual behavior detected'
+            },
+            'perimeter-breach-1': { 
+                title: 'PERIMETER BREACH', 
+                color: '#dc2626',
+                icon: '🚧',
+                desc: 'Security perimeter compromised'
+            },
+            'unattended-bag-1': { 
+                title: 'UNATTENDED OBJECT', 
+                color: '#f59e0b',
+                icon: '🎒',
+                desc: 'Suspicious package detected'
+            },
+            'facial-recognition-1': { 
+                title: 'FACIAL RECOGNITION', 
+                color: '#059669',
+                icon: '📷',
+                desc: 'Identity verification in progress'
+            },
+            'smoke-detection-1': { 
+                title: 'SMOKE DETECTED', 
+                color: '#dc2626',
+                icon: '🔥',
+                desc: 'Fire/smoke alert triggered'
+            },
+            'crowd-density-1': { 
+                title: 'CROWD ALERT', 
+                color: '#f59e0b',
+                icon: '👥',
+                desc: 'High crowd density detected'
+            },
+            'placeholder': { 
+                title: 'NO SIGNAL', 
+                color: '#6b7280',
+                icon: '📹',
+                desc: 'Camera feed unavailable'
+            }
+        };
+
+        function generateImage() {
+            const type = document.getElementById('incidentType').value;
+            const incident = incidentTypes[type];
+            currentImageName = type;
+
+            // Clear canvas
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(0, 0, 640, 360);
+
+            // Add noise/static effect
+            for (let i = 0; i < 1000; i++) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.1})`;
+                ctx.fillRect(Math.random() * 640, Math.random() * 360, 1, 1);
+            }
+
+            // Add scanlines
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.1)';
+            ctx.lineWidth = 1;
+            for (let y = 0; y < 360; y += 4) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(640, y);
+                ctx.stroke();
+            }
+
+            // Add timestamp overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(10, 10, 200, 30);
+            ctx.fillStyle = '#00ff00';
+            ctx.font = '14px monospace';
+            ctx.fillText(new Date().toLocaleString(), 15, 30);
+
+            // Add camera label
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(10, 320, 150, 30);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px Arial';
+            ctx.fillText('CAM-' + Math.floor(Math.random() * 99 + 1).toString().padStart(2, '0'), 15, 340);
+
+            // Add alert overlay
+            ctx.fillStyle = incident.color;
+            ctx.fillRect(0, 0, 640, 40);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${incident.icon} ${incident.title}`, 320, 25);
+
+            // Add description
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(0, 280, 640, 80);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(incident.desc, 320, 320);
+
+            // Add detection box (simulated)
+            ctx.strokeStyle = incident.color;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(200 + Math.random() * 100, 100 + Math.random() * 100, 150, 100);
+
+            ctx.textAlign = 'left'; // Reset text alignment
+        }
+
+        function downloadImage() {
+            if (!currentImageName) {
+                alert('Please generate an image first');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.download = currentImageName + '.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+        }
+
+        function generateAll() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '<h2>Generated Images</h2>';
+
+            Object.keys(incidentTypes).forEach(type => {
+                document.getElementById('incidentType').value = type;
+                generateImage();
+                
+                const imageData = canvas.toDataURL('image/jpeg', 0.9);
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'image-item';
+                imageDiv.innerHTML = `
+                    <h3>${type}.jpg</h3>
+                    <img src="${imageData}" style="width: 100%; max-width: 200px; border: 1px solid #ddd; border-radius: 4px;">
+                    <br>
+                    <a href="${imageData}" download="${type}.jpg" style="text-decoration: none;">
+                        <button>Download</button>
+                    </a>
+                `;
+                gallery.appendChild(imageDiv);
+            });
+        }
+
+        // Generate initial image
+        generateImage();
+    </script>
+</body>
+</html>

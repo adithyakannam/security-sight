@@ -1,0 +1,7 @@
+{
+  "/api-disabled/api/incidents/[id]/resolve/route": "/api-disabled/api/incidents/[id]/resolve",
+  "/_not-found/page": "/_not-found",
+  "/api-disabled/api/incidents/route": "/api-disabled/api/incidents",
+  "/api-disabled/api/incidents/[id]/route": "/api-disabled/api/incidents/[id]",
+  "/page": "/"
+}

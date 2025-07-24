@@ -1,0 +1,7 @@
+{
+  "/api-disabled/api/incidents/[id]/resolve/route": "app/api-disabled/api/incidents/[id]/resolve/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api-disabled/api/incidents/route": "app/api-disabled/api/incidents/route.js",
+  "/api-disabled/api/incidents/[id]/route": "app/api-disabled/api/incidents/[id]/route.js",
+  "/page": "app/page.js"
+}
